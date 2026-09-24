@@ -1,161 +1,62 @@
-# Student-pass-file-prediction
-Browser-based ML app predicting student pass/fail outcomes using TensorFlow.js logistic regression and a from-scratch CART decision tree — no backend required.
-Student Pass/Fail Prediction is a fully client-side machine learning app built with React, Vite, and Tailwind CSS. It trains and compares two models — a TensorFlow.js logistic regression and a from-scratch CART decision tree — directly in the browser on a synthetic dataset of 956 students, with no backend or external APIs involved.
-
-The app handles the full pipeline in-browser: CSV loading and cleaning, median imputation of missing values, feature engineering (Academic Average and Study Engagement scores), an 80/20 train/test split, model training, and evaluation (accuracy, precision, recall, F1, ROC-AUC, confusion matrix). Users can input a student's academic profile to get a live pass/fail prediction with an interpretability category, explore dataset-driven insights (e.g. correlation between attendance and outcome), and export a full PDF report of the analysis.
-
-A sibling project to a similarly-architected Titanic Survival Prediction app, reusing the same model pipeline adapted for academic outcome prediction.
 # Student Pass/Fail Prediction
 
-## Project Overview
+Frontend-only ML app. React + Vite + Tailwind + TensorFlow.js (Logistic Regression) + a from-scratch
+Decision Tree + Recharts + PapaParse + jsPDF + html2canvas. No backend, no external APIs. Data loading,
+cleaning, feature engineering, training, evaluation, prediction, and PDF report all run in the browser.
 
-Student Pass/Fail Prediction is a machine learning-based web application that predicts whether a student is likely to pass or fail based on academic and behavioral factors.
+Sibling to the Titanic Survival Prediction project — same architecture (TensorFlow.js logistic
+regression + from-scratch CART decision tree, trained on the same 80/20 split for direct comparison),
+adapted for academic outcome prediction.
 
-The application analyzes student information such as attendance, study hours, internal marks, assignment scores, previous examination scores, midterm scores, participation, and sleep hours.
+## Run it
 
-Two machine learning models are implemented and evaluated:
+npm install
+npm run dev
 
-* Logistic Regression
-* Decision Tree
+Open the printed local URL. First load: dataset loads, records are cleaned and range-validated, missing
+values are median-imputed, engineered features are added, then both models train before the dashboard
+is ready.
 
-The complete machine learning workflow runs directly in the browser without requiring a backend server or external API.
+## Structure
 
-## Features
+- public/data/student_results.csv — 956 synthetic students with realistic academic patterns (attendance,
+  study hours, and all four score fields genuinely predictive of outcome, plus unexplained variance and
+  a few missing values to exercise imputation)
+- src/utils/featureEngineering.js — median imputation (valid values only) + two engineered features:
+  **Academic Average** (mean of internal marks, assignment, previous exam, and midterm scores) and
+  **Study Engagement** (a blend of normalized study hours, participation, and attendance). Student ID
+  and the target are never used as inputs — no target leakage
+- src/ml/preprocessing.js — 80/20 split (seeded, reproducible) + min-max normalization stats
+- src/ml/logisticRegression.js — TensorFlow.js: single dense unit + sigmoid, binary cross-entropy
+- src/ml/decisionTree.js — from-scratch CART classifier (Gini impurity, feature importance from total
+  impurity reduction)
+- src/ml/modelTraining.js — trains both models on the same split so they're directly comparable
+- src/utils/metrics.js — accuracy, precision, recall, F1, confusion matrix, ROC-AUC (Mann-Whitney
+  rank-sum formula)
+- src/utils/analysis.js — attendance-range and study-hour-range pass-rate breakdowns, passed-vs-failed
+  academic score comparison, attendance categorization
+- src/utils/insights.js — dynamic, dataset-derived observations (strongest correlated factor via Pearson
+  correlation, worded as an association, never a causal claim)
+- src/pages/ — Dashboard, Student Predictor, Student Analysis, Model Performance
+- src/components/ — Sidebar, Header, StatCard, ChartCard, StudentForm, PredictionResult, StudentTable,
+  StudentDetails, ConfusionMatrix, ModelMetrics, ReportButton
+- src/utils/reportGenerator.js — builds the downloadable PDF (jsPDF + html2canvas)
 
-* Student pass/fail prediction
-* Logistic Regression model
-* Decision Tree model
-* Model performance comparison
-* Student data analysis
-* Attendance and study-hour analysis
-* Confusion matrix
-* Accuracy, Precision, Recall, F1 Score, and ROC-AUC
-* Dynamic data-driven insights
-* Student profile analysis
-* PDF report generation
-* CSV dataset processing
-* Missing-value handling
-* Feature engineering
-* Responsive dashboard interface
+Swap in your own data by replacing public/data/student_results.csv, keeping the same column names
+(student_id, age, gender, attendance, study_hours, internal_marks, assignment_score,
+previous_exam_score, midterm_score, participation, sleep_hours, final_result).
 
-## Technologies Used
+## Prediction
 
-### Frontend
+On the Student Predictor page, pick a model, enter a student's academic profile, and click Predict
+Result. The result shows pass/fail probability at the 50% threshold, the computed Academic Average, and
+an interpretation category (Strong Academic Profile / Moderate Academic Profile / At-Risk Profile) based
+on the submitted attendance and academic average — always framed as a model prediction, not a guaranteed
+outcome.
 
-* React
-* Vite
-* Tailwind CSS
-* JavaScript
+## Report download
 
-### Machine Learning
-
-* TensorFlow.js
-* Logistic Regression
-* Decision Tree
-* Gini Impurity
-* Feature Engineering
-* Data Normalization
-
-### Data Processing
-
-* PapaParse
-* JavaScript-based preprocessing
-* Median imputation
-* Min-Max normalization
-
-### Visualization and Reporting
-
-* Recharts
-* jsPDF
-* html2canvas
-
-## Dataset
-
-The project includes a student results dataset containing approximately 956 student records.
-
-The dataset contains information such as:
-
-* Student ID
-* Age
-* Gender
-* Attendance
-* Study Hours
-* Internal Marks
-* Assignment Score
-* Previous Exam Score
-* Midterm Score
-* Participation
-* Sleep Hours
-* Final Result
-
-The final result contains two classes:
-
-* Pass
-* Fail
-
-The dataset is intended for educational and demonstration purposes.
-
-## Machine Learning Models
-
-### Logistic Regression
-
-Logistic Regression is used as a binary classification model to estimate the probability that a student will pass.
-
-TensorFlow.js is used to train the model directly in the browser.
-
-The model uses a sigmoid activation function and binary cross-entropy loss.
-
-### Decision Tree
-
-A Decision Tree classifier is implemented from scratch using JavaScript.
-
-The model uses Gini impurity to determine the best splits and can also provide feature importance based on impurity reduction.
-
-## Data Preprocessing
-
-Before training the models, the application performs several preprocessing steps:
-
-1. Loads the CSV dataset.
-2. Validates required columns.
-3. Removes invalid records.
-4. Removes duplicate records.
-5. Handles missing values using median imputation.
-6. Creates additional engineered features.
-7. Splits the dataset into training and testing sets.
-8. Normalizes numerical features where required.
-
-The dataset is divided using an 80/20 train-test split.
-
-## Feature Engineering
-
-Two additional features are generated:
-
-### Academic Average
-
-Academic Average represents the mean of:
-
-* Internal Marks
-* Assignment Score
-* Previous Exam Score
-* Midterm Score
-
-### Study Engagement
-
-Study Engagement combines information from:
-
-* Study Hours
-* Participation
-* Attendance
-
-These engineered features provide additional information for the machine learning models.
-
-Student ID and the final result are not used as prediction features, helping prevent target leakage.
-
-## Model Evaluation
-
-The application evaluates both machine learning models using the same test dataset.
-
-The following metrics are calculated:
-
-* Accuracy
-* Pre
+"Download Report" generates student-pass-fail-prediction-report.pdf with the dataset summary, both
+models' metrics and the selected model's confusion matrix, the current prediction and interpretation (if
+any), dynamic insights, and a chart image. Blocks with "Please load the student dataset first" / "Train
+the model before generating the report" if run too early.
